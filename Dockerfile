@@ -33,7 +33,7 @@ LABEL maintainer="Microsoft" \
 # jq - we include jq as a useful tool
 # pip wheel - required for CLI packaging
 # jmespath-terminal - we include jpterm as a useful tool
-RUN apk add --no-cache bash openssh ca-certificates jq curl openssl git zip \
+RUN apk add --no-cache bash openssh ca-certificates jq curl openssl git zip openssh-server tmux \
  && apk add --no-cache --virtual .build-deps gcc make openssl-dev libffi-dev musl-dev linux-headers \
  && update-ca-certificates
 
@@ -73,5 +73,10 @@ WORKDIR /
 # Remove CLI source code from the final image and normalize line endings.
 RUN rm -rf ./azure-cli && \
     dos2unix /root/.bashrc /usr/local/bin/az
+
+# start up ssh server and tmux, open up ssh port
+RUN service ssh start && \
+  tmux new -s mysesh
+EXPOSE 22/tcp
 
 CMD bash
