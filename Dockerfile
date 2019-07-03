@@ -66,7 +66,8 @@ RUN /bin/bash -c 'TMP_PKG_DIR=$(mktemp -d); \
         | xargs -r apk info --installed \
         | sort -u \
     )" \
- && apk add --virtual .rundeps $runDeps
+ && apk add --virtual .rundeps $runDeps \
+ && sed -i "s/#PermitRootLogin.*/PermitRootLogin\ yes/" /etc/ssh/sshd_config
 
 WORKDIR /
 
@@ -75,8 +76,9 @@ RUN rm -rf ./azure-cli && \
     dos2unix /root/.bashrc /usr/local/bin/az
 
 # start up ssh server and tmux, open up ssh port
-RUN service ssh start && \
-  tmux new -s mysesh
+#RUN service ssh start && \
+#  tmux new -s mysesh
 EXPOSE 22/tcp
 
-CMD bash
+#CMD bash
+CMD ["/usr/sbin/sshd", "-D"]
