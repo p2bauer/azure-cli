@@ -29,7 +29,8 @@ LABEL maintainer="Microsoft" \
 # openssh - included for ssh-keygen
 # ca-certificates
 
-ADD dockerfile-entrypoint.sh /bin/
+COPY docker-entrypoint.sh /bin/
+#ADD dockerfile-entrypoint.sh /bin/
 ENV SSH_SERVER_KEYS /etc/ssh/host_keys/
 
 # curl - required for installing jp
