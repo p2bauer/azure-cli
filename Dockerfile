@@ -29,6 +29,9 @@ LABEL maintainer="Microsoft" \
 # openssh - included for ssh-keygen
 # ca-certificates
 
+ADD dockerfile-entrypoint.sh /bin/
+ENV SSH_SERVER_KEYS /etc/ssh/host_keys/
+
 # curl - required for installing jp
 # jq - we include jq as a useful tool
 # pip wheel - required for CLI packaging
@@ -67,9 +70,16 @@ RUN /bin/bash -c 'TMP_PKG_DIR=$(mktemp -d); \
         | sort -u \
     )" \
  && apk add --virtual .rundeps $runDeps \
+ && mkdir -p ${SSH_SERVER_KEYS}  \
+ && echo "HostKey ${SSH_SERVER_KEYS}ssh_host_rsa_key" >> /etc/ssh/sshd_config \
+ && echo "HostKey ${SSH_SERVER_KEYS}ssh_host_dsa_key" >> /etc/ssh/sshd_config \
+ && echo "HostKey ${SSH_SERVER_KEYS}ssh_host_ecdsa_key" >> /etc/ssh/sshd_config \
+ && echo "HostKey ${SSH_SERVER_KEYS}ssh_host_ed25519_key" >> /etc/ssh/sshd_config \
  && sed -i "s/#PermitRootLogin.*/PermitRootLogin\ yes/" /etc/ssh/sshd_config
 
 WORKDIR /
+
+VOLUME ["${SSH_SERVER_KEYS}"]
 
 # Remove CLI source code from the final image and normalize line endings.
 RUN rm -rf ./azure-cli && \
@@ -81,4 +91,5 @@ RUN rm -rf ./azure-cli && \
 EXPOSE 22/tcp
 
 #CMD bash
+ENTRYPOINT ["/bin/dockerfile-entrypoint.sh"]
 CMD ["/usr/sbin/sshd", "-D"]
